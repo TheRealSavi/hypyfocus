@@ -39,6 +39,8 @@ _Description: This graph depicts the relationship between the number of skill ch
 - **Probability of Completion Times**: Helps you understand the most likely durations for completing the generator repair and how the Hyperfocus perk shifts these probabilities.
 - **Skill Checks vs. Completion Time**: Shows how the number of skill checks impacts the repair process. A higher number of skill checks will result in a decreased repair time, and this graph helps quantify that effect.
 
+For a more detailed explanation of the results, you can watch the video where I review the findings in depth: [Watch Video](https://www.youtube.com/watch?v=g8QfRM7GwD8)
+
 ## Requirements
 
 - Python 3.12 or higher
@@ -53,3 +55,7 @@ _Description: This graph depicts the relationship between the number of skill ch
 ## Usage
 
 Run the script using Python. The entry file is main.py. You can specify the number of generators to simulate and other parameters by editing the code.
+
+## Bonus
+
+There is also a crude pygame script you can run called skillcheckgame.py where you can practice and see how difficult hyperfocus skillechecks can be.
