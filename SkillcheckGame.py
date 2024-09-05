@@ -41,6 +41,7 @@ def initGame():
     theta = 0
 
     rotTime = 1.1
+    dRotTime = rotTime
 
     fails = 0
     success = 0
@@ -61,13 +62,13 @@ def initGame():
                             theta = 0
                         else:
                             fails += 1
-                            rotTime = 1.1
+                            rotTime = dRotTime
                             success = 0
                             startingPos = posclock[random.randint(4, 10)]
                             theta = 0
                     else:
                         fails += 1
-                        rotTime = 1.1
+                        rotTime = dRotTime
                         success = 0
                         startingPos = posclock[random.randint(4, 10)]
                         theta = 0
@@ -85,6 +86,14 @@ def initGame():
         screen.blit(text, textRect)
         screen.blit(text2, text2Rect)
 
+        if startingPos - 1.57 - (greatZone * 2 * pi) <= 2 * pi - theta:
+            if 2 * pi - theta <= startingPos - 1.57:
+                lineColor = (0, 200, 0)
+            else:
+                lineColor = (200, 0, 0)
+        else:
+            lineColor = (200, 0, 0)
+
         pygame.draw.circle(screen, (255, 255, 255), (200, 200), 95, 2)
 
         pygame.draw.arc(screen, (122, 122, 122), [
@@ -93,16 +102,19 @@ def initGame():
         pygame.draw.arc(screen, (255, 255, 255), [
                         100, 100, 200, 200], startingPos - (greatZone * 2 * pi), startingPos, 7)
 
-        pygame.draw.line(screen, (200, 0, 0), (originX + ((lineStartX - originX) * cos(theta) - (lineStartY - originY) *
-                                                          sin(theta)), originY + ((lineStartX - originX) * sin(theta) + (lineStartY - originY) * cos(theta))), (originX + ((lineEndX - originX) * cos(theta) - (lineEndY - originY) *
-                                                                                                                                                                           sin(theta)), originY + ((lineEndX - originX) * sin(theta) + (lineEndY - originY) * cos(theta))), 5)
+        pygame.draw.line(screen, lineColor, (originX + ((lineStartX - originX) * cos(theta) - (lineStartY - originY) *
+                                                        sin(theta)), originY + ((lineStartX - originX) * sin(theta) + (lineStartY - originY) * cos(theta))), (originX + ((lineEndX - originX) * cos(theta) - (lineEndY - originY) *
+                                                                                                                                                                         sin(theta)), originY + ((lineEndX - originX) * sin(theta) + (lineEndY - originY) * cos(theta))), 5)
 
         if startingPos - 1.57 - (goodZone * 2 * pi) >= 2 * pi - theta:
             fails += 1
-            rotTime = 1.1
+            rotTime = dRotTime
             success = 0
             startingPos = posclock[random.randint(4, 10)]
             theta = 0
 
         pygame.display.flip()
         dt = clock.tick(144) / 1000
+
+
+initGame()
