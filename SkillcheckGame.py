@@ -53,8 +53,8 @@ def initGame():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
 
-                    if startingPos - 1.57 - (greatZone * 2 * pi) <= 2 * pi - theta:
-                        if 2 * pi - theta <= startingPos - 1.57:
+                    if startingPos - pi/2 - (greatZone * 2 * pi) <= 2 * pi - theta:
+                        if 2 * pi - theta <= startingPos - pi/2:
                             success += 1
                             if success <= 6:
                                 rotTime = rotTime * (1 / (1 + 0.04))
@@ -76,7 +76,7 @@ def initGame():
         theta += 2*pi / (rotTime * 1/dt)
 
         screen.fill("black")
-        text = font.render("Fails: " + str(fails) + " Success: " + str(success) + "RotTime: " + str(round(rotTime, 4)) + " Endpos: " + str(round(startingPos - 1.57, 4)) + " Startpos: " + str(round(startingPos - 1.57 - (goodZone * 2 * pi), 4))+" Theta: " + str(round((2 * pi - theta), 4)) + " FPS: " +
+        text = font.render("Fails: " + str(fails) + " Success: " + str(success) + "RotTime: " + str(round(rotTime, 4)) + " Endpos: " + str(round(startingPos - pi/2, 4)) + " Startpos: " + str(round(startingPos - pi/2 - (goodZone * 2 * pi), 4))+" Theta: " + str(round((2 * pi - theta), 4)) + " FPS: " +
                            str(round(1 / dt, 4)), True, (120, 120, 120))
         text2 = font.render(str(success), True, (120, 120, 120))
         textRect = text.get_rect()
@@ -86,8 +86,8 @@ def initGame():
         screen.blit(text, textRect)
         screen.blit(text2, text2Rect)
 
-        if startingPos - 1.57 - (greatZone * 2 * pi) <= 2 * pi - theta:
-            if 2 * pi - theta <= startingPos - 1.57:
+        if startingPos - pi/2 - (greatZone * 2 * pi) <= 2 * pi - theta:
+            if 2 * pi - theta <= startingPos - pi/2:
                 lineColor = (0, 200, 0)
             else:
                 lineColor = (200, 0, 0)
@@ -106,7 +106,7 @@ def initGame():
                                                         sin(theta)), originY + ((lineStartX - originX) * sin(theta) + (lineStartY - originY) * cos(theta))), (originX + ((lineEndX - originX) * cos(theta) - (lineEndY - originY) *
                                                                                                                                                                          sin(theta)), originY + ((lineEndX - originX) * sin(theta) + (lineEndY - originY) * cos(theta))), 5)
 
-        if startingPos - 1.57 - (goodZone * 2 * pi) >= 2 * pi - theta:
+        if startingPos - pi/2 - (goodZone * 2 * pi) >= 2 * pi - theta:
             fails += 1
             rotTime = dRotTime
             success = 0
