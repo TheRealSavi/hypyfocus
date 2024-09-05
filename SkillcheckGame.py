@@ -1,5 +1,6 @@
+import math
 import random
-from numpy import cos, pi, sin
+from numpy import pi
 import pygame
 
 
@@ -9,112 +10,149 @@ def initGame():
     clock = pygame.time.Clock()
     font = pygame.font.Font('freesansbold.ttf', 24)
     running = True
-    dt = 0.00001
 
-    posclock = [0.0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
-    posclock[12] = pi/2
-    posclock[1] = pi/3
-    posclock[2] = pi/6
-    posclock[3] = 0
-    posclock[4] = 11*pi/6
-    posclock[5] = 5*pi/3
-    posclock[6] = 3*pi/2
-    posclock[7] = 4*pi/3
-    posclock[8] = 7*pi/6
-    posclock[9] = pi
-    posclock[10] = 5*pi/6
-    posclock[11] = 2 * pi/3
+    posclock: list[float] = [0.0] * 13
+    posclock[12] = 0.0 + (pi / 2)
+    posclock[11] = pi/6 + (pi / 2)
+    posclock[10] = pi/3 + (pi / 2)
+    posclock[9] = pi/2 + (pi / 2)
+    posclock[8] = 2*pi/3 + (pi / 2)
+    posclock[7] = 5*pi/6 + (pi / 2)
+    posclock[6] = pi + (pi / 2)
+    posclock[5] = 7*pi/6 + (pi / 2)
+    posclock[4] = 4*pi/3 + (pi / 2)
+    posclock[3] = 3*pi/2 + (pi / 2)
+    posclock[2] = 5*pi/3 + (pi / 2)
+    posclock[1] = 11*pi/6 + (pi / 2)
 
-    startingPos = posclock[8]
+    startingPos = posclock[12]
+
+    theta = startingPos
+
+    skOrigin = [int(1280/2), int(720/2)]
+    skRadius = 200
+
+    skEarliestPos = 4
+    skLatestPos = 10
+
+    skPosClock = random.randint(skEarliestPos, skLatestPos)
+    skPos = posclock[skPosClock]
+
+    lineOrigin = [0, 0]
+
     greatZone = 0.03
     goodZone = 0.13
-
-    lineStartX = 200
-    lineStartY = 62
-
-    lineEndX = 200
-    lineEndY = 150
-
-    originX = 200
-    originY = 200
-
-    theta = 0
 
     rotTime = 1.1
     dRotTime = rotTime
 
-    fails = 0
-    success = 0
+    consecGreats = 0
+    inGoodZone = False
+    inGreatZone = False
+
+    prevTime = pygame.time.get_ticks()
 
     while running:
+
+        cTime = pygame.time.get_ticks()
+        deltaTime = (cTime - prevTime) / 1000
+        prevTime = cTime
+        if deltaTime == 0:
+            continue
+
+        if theta <= skPos:
+            if theta >= skPos - (greatZone * 2 * pi):
+                inGreatZone = True
+            else:
+                inGreatZone = False
+        else:
+            inGreatZone = False
+
+        if theta < skPos - (greatZone * 2 * pi):
+            if theta >= skPos - (greatZone * 2 * pi) - (goodZone * 2 * pi):
+                inGoodZone = True
+            else:
+                inGoodZone = False
+        else:
+            inGoodZone = False
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
-
-                    if startingPos - pi/2 - (greatZone * 2 * pi) <= 2 * pi - theta:
-                        if 2 * pi - theta <= startingPos - pi/2:
-                            success += 1
-                            if success <= 6:
-                                rotTime = rotTime * (1 / (1 + 0.04))
-                            startingPos = posclock[random.randint(4, 10)]
-                            theta = 0
-                        else:
-                            fails += 1
-                            rotTime = dRotTime
-                            success = 0
-                            startingPos = posclock[random.randint(4, 10)]
-                            theta = 0
+                    if inGreatZone:
+                        consecGreats += 1
+                        skPosClock = random.randint(skEarliestPos, skLatestPos)
+                        skPos = posclock[skPosClock]
+                        theta = startingPos
+                    elif inGoodZone:
+                        consecGreats = 0
+                        skPosClock = random.randint(skEarliestPos, skLatestPos)
+                        skPos = posclock[skPosClock]
+                        theta = startingPos
                     else:
-                        fails += 1
-                        rotTime = dRotTime
-                        success = 0
-                        startingPos = posclock[random.randint(4, 10)]
-                        theta = 0
+                        consecGreats = 0
+                        skPosClock = random.randint(skEarliestPos, skLatestPos)
+                        skPos = posclock[skPosClock]
+                        theta = startingPos
 
-        theta += 2*pi / (rotTime * 1/dt)
+        theta -= (2 * pi / rotTime) * deltaTime
+        theta %= 2 * math.pi
 
         screen.fill("black")
-        text = font.render("Fails: " + str(fails) + " Success: " + str(success) + "RotTime: " + str(round(rotTime, 4)) + " Endpos: " + str(round(startingPos - pi/2, 4)) + " Startpos: " + str(round(startingPos - pi/2 - (goodZone * 2 * pi), 4))+" Theta: " + str(round((2 * pi - theta), 4)) + " FPS: " +
-                           str(round(1 / dt, 4)), True, (120, 120, 120))
-        text2 = font.render(str(success), True, (120, 120, 120))
-        textRect = text.get_rect()
-        text2Rect = text2.get_rect()
-        text2Rect.center = (200, 200)
 
-        screen.blit(text, textRect)
-        screen.blit(text2, text2Rect)
+        infoText = font.render(
+            f"Consec Great: {consecGreats:02d} "
+            f"RotTime: {rotTime:06.3f} "
+            f"SkClock: {skPosClock} "
+            f"In Great: {inGreatZone}"
+            f"In Good: {inGoodZone}"
+            f"Theta: {theta:06.3f} "
 
-        if startingPos - pi/2 - (greatZone * 2 * pi) <= 2 * pi - theta:
-            if 2 * pi - theta <= startingPos - pi/2:
-                lineColor = (0, 200, 0)
-            else:
-                lineColor = (200, 0, 0)
-        else:
-            lineColor = (200, 0, 0)
+            f"FPS: {1 / deltaTime:05.2f} "
+            f"Delta Time: {deltaTime:06.2f}",
+            True,
+            (120, 120, 120)
+        )
 
-        pygame.draw.circle(screen, (255, 255, 255), (200, 200), 95, 2)
+        skText = font.render("[Space]", True, (120, 120, 120))
 
-        pygame.draw.arc(screen, (122, 122, 122), [
-                        100, 100, 200, 200], startingPos - (goodZone * 2 * pi), startingPos, 7)
+        infoTextRect = infoText.get_rect()
+        skTextRect = skText.get_rect()
 
-        pygame.draw.arc(screen, (255, 255, 255), [
-                        100, 100, 200, 200], startingPos - (greatZone * 2 * pi), startingPos, 7)
+        skTextRect.center = (skOrigin[0], skOrigin[1])
 
-        pygame.draw.line(screen, lineColor, (originX + ((lineStartX - originX) * cos(theta) - (lineStartY - originY) *
-                                                        sin(theta)), originY + ((lineStartX - originX) * sin(theta) + (lineStartY - originY) * cos(theta))), (originX + ((lineEndX - originX) * cos(theta) - (lineEndY - originY) *
-                                                                                                                                                                         sin(theta)), originY + ((lineEndX - originX) * sin(theta) + (lineEndY - originY) * cos(theta))), 5)
+        screen.blit(infoText, infoTextRect)
+        screen.blit(skText, skTextRect)
 
-        if startingPos - pi/2 - (goodZone * 2 * pi) >= 2 * pi - theta:
-            fails += 1
-            rotTime = dRotTime
-            success = 0
-            startingPos = posclock[random.randint(4, 10)]
-            theta = 0
+        lineColor = (200, 0, 0)
+        if inGreatZone:
+            lineColor = (0, 200, 0)
+        if inGoodZone:
+            lineColor = (0, 0, 200)
+
+        pygame.draw.circle(screen, (255, 0, 255), (skOrigin[0], skOrigin[1]), skRadius, 2)
+
+        # good zone
+        pygame.draw.arc(screen, (122, 122, 122),
+                        pygame.Rect(skOrigin[0] - skRadius, skOrigin[1] - skRadius, skRadius * 2, skRadius * 2),
+                        skPos - (greatZone * 2 * pi) - (goodZone * 2 * pi),
+                        skPos - (greatZone * 2 * pi), 7)
+
+        # great zone
+        pygame.draw.arc(screen, (220, 220, 220),
+                        pygame.Rect(skOrigin[0] - skRadius, skOrigin[1] - skRadius, skRadius * 2, skRadius * 2),
+                        skPos - (greatZone * 2 * pi),
+                        skPos, 7)
+
+        pygame.draw.line(screen, lineColor, (skOrigin[0], skOrigin[1]),
+                         (skOrigin[0] + skRadius * math.cos(theta),
+                          skOrigin[1] - skRadius * math.sin(theta)), 5)
 
         pygame.display.flip()
-        dt = clock.tick(144) / 1000
+        clock.tick(700)
+    # end game loop
 
 
 initGame()
