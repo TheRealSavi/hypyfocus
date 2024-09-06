@@ -2,13 +2,15 @@ import math
 import random
 from numpy import pi
 import pygame
+import os
 
 
 def initGame():
+
     pygame.init()
-    screen = pygame.display.set_mode((1280, 720))
+    screen = pygame.display.set_mode((1920, 108), pygame.FULLSCREEN | pygame.DOUBLEBUF | pygame.HWSURFACE)
     clock = pygame.time.Clock()
-    font = pygame.font.Font('freesansbold.ttf', 24)
+    font = pygame.font.Font('freesansbold.ttf', 20)
     running = True
 
     posclock: list[float] = [0.0] * 13
@@ -29,7 +31,7 @@ def initGame():
 
     theta = startingPos
 
-    skOrigin = [int(1280/2), int(720/2)]
+    skOrigin = [int(1920/2), int(1080/2)]
     skRadius = 200
 
     skEarliestPos = 4
@@ -40,7 +42,7 @@ def initGame():
 
     lineOrigin = [0, 0]
 
-    greatZone = 0.03
+    greatZone = 0.05
     goodZone = 0.13
 
     rotTime = 1.1
@@ -106,8 +108,8 @@ def initGame():
             f"Consec Great: {consecGreats:02d} "
             f"RotTime: {rotTime:06.3f} "
             f"SkClock: {skPosClock} "
-            f"In Great: {inGreatZone}"
-            f"In Good: {inGoodZone}"
+            f"In Great: {inGreatZone} "
+            f"In Good: {inGoodZone} "
             f"Theta: {theta:06.3f} "
 
             f"FPS: {1 / deltaTime:05.2f} "
@@ -151,7 +153,7 @@ def initGame():
                           skOrigin[1] - skRadius * math.sin(theta)), 5)
 
         pygame.display.flip()
-        clock.tick(700)
+        clock.tick(144)
     # end game loop
 
 
