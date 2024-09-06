@@ -1,12 +1,37 @@
 from dataclasses import dataclass
+import threading
 import time
 import matplotlib.pyplot as plt
 from scipy.stats import gaussian_kde
 from numpy import linspace
+from matplotlib.animation import FuncAnimation
+import tkinter as tk
 
+from Skillcheck import SkillCheck
 from Toolbox import Toolbox
 from Survivor import Survivor
 from Generator import Generator
+
+plt.style.use('fivethirtyeight')
+fig, axs = plt.subplots(4, 2)
+
+
+class CircularBuffer:
+    def __init__(self, size):
+        self.size = size
+        self.buffer = [None] * size
+        self.start = 0
+        self.count = 0
+
+    def add(self, value):
+        self.buffer[(self.start + self.count) % self.size] = value
+        if self.count == self.size:
+            self.start = (self.start + 1) % self.size  # Move the start pointer when the buffer is full
+        else:
+            self.count += 1
+
+    def get(self):
+        return [self.buffer[(self.start + i) % self.size] for i in range(self.count)]
 
 
 @dataclass
@@ -14,6 +39,25 @@ class SimResult:
     frames: int
     skillchecks: int
     name: str
+
+
+# Initialize result lists
+baseResults = CircularBuffer(1000)
+toolboxResults = CircularBuffer(1000)
+hyperfocusResults = CircularBuffer(1000)
+hyperfocusToolboxResults = CircularBuffer(1000)
+
+
+def update_skill(val):
+    SkillCheck.skill = float(val) / 100
+    return
+
+
+root = tk.Tk()
+root.title("Slider")
+
+slider = tk.Scale(root, from_=2, to=100, orient="horizontal", command=update_skill)
+slider.pack()
 
 
 def simStart(name: str, useHyperfocus: bool, useToolbox: bool):
@@ -34,8 +78,8 @@ def simGen(name: str, gen: Generator, survivor: Survivor):
     return SimResult(frames, gen.getSkillCheckCount(), name)
 
 
-def runSim():
-    simCount = 100000  # How many times to run each simulation
+def runSim(anis):
+    simCount = 50  # How many times to run each simulation
 
     # Arguments for the simulations
     base_args = ("base", False, False)
@@ -43,34 +87,28 @@ def runSim():
     hyperfocus_args = ("hyperfocus", True, False)
     hyperfocusToolbox_args = ("hyperfocus and toolbox", True, True)
 
-    # Initialize result lists
-    baseResults = []
-    toolboxResults = []
-    hyperfocusResults = []
-    hyperfocusToolboxResults = []
-
     # Timing serial execution
     start_time = time.time()
 
     # Run base simulations
     for _ in range(simCount):
         result = simStart(*base_args)
-        baseResults.append(result)
+        baseResults.add(result)
 
     # Run toolbox simulations
     for _ in range(simCount):
         result = simStart(*toolbox_args)
-        toolboxResults.append(result)
+        toolboxResults.add(result)
 
     # Run hyperfocus simulations
     for _ in range(simCount):
         result = simStart(*hyperfocus_args)
-        hyperfocusResults.append(result)
+        hyperfocusResults.add(result)
 
     # Run hyperfocus and toolbox simulations
     for _ in range(simCount):
         result = simStart(*hyperfocusToolbox_args)
-        hyperfocusToolboxResults.append(result)
+        hyperfocusToolboxResults.add(result)
 
     end_time = time.time()
     print(f"Serial execution time: {end_time - start_time:.2f} seconds")
@@ -78,32 +116,41 @@ def runSim():
     createGraphs([baseResults, toolboxResults, hyperfocusResults, hyperfocusToolboxResults])
 
 
-def createGraphs(simulations: list[list[SimResult]]):
+def createGraphs(simulations: list[CircularBuffer]):
     # values over which to evaluate a kernel
     dist_spaceTime = linspace(0, 90, 100)
     dist_spaceSkillcheck = linspace(0, 30, 100)
 
     # create subplots
-    fig, axs = plt.subplots(simulations.__len__(), 2)
 
     nextOpenRow = 0
 
     for simulationResults in simulations:
         timeDataset = []
         skillcheckDataset = []
-        for result in simulationResults:
-            timeDataset.append(result.frames)
-            skillcheckDataset.append(result.skillchecks)
+        for result in simulationResults.get():
+            timeDataset.append(result.frames)  # type: ignore
+            skillcheckDataset.append(result.skillchecks)  # type: ignore
         timeKDE = gaussian_kde(timeDataset)
         skillcheckKDE = gaussian_kde(skillcheckDataset)
+        axs[nextOpenRow, 0].cla()
+        axs[nextOpenRow, 1].cla()
         axs[nextOpenRow, 0].plot(dist_spaceTime, timeKDE(dist_spaceTime))
-        axs[nextOpenRow, 0].set_title(result.name + ' time')
+        axs[nextOpenRow, 0].set_title(result.name + ' time')  # type: ignore
         axs[nextOpenRow, 1].plot(dist_spaceSkillcheck, skillcheckKDE(dist_spaceSkillcheck))
-        axs[nextOpenRow, 1].set_title(result.name + ' skillchecks')
+        axs[nextOpenRow, 1].set_title(result.name + ' skillchecks')  # type: ignore
         nextOpenRow += 1
 
+
+def startPlotter():
+    ani = FuncAnimation(fig, runSim)  # type: ignore
+    plt.tight_layout()
     plt.show()
 
 
 if __name__ == '__main__':
-    runSim()
+    # Start the background task in a separate thread
+    thread = threading.Thread(target=root.mainloop, daemon=True)
+    thread.start()
+
+    startPlotter()
