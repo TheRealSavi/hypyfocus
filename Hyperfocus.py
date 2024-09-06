@@ -20,3 +20,6 @@ class Hyperfocus:
         target.increaseRotationSpeedByPercent(self.increaseRotationSpeedBy)
         target.increaseBonusPercentByPercent(self.increaseBonusBy)
         target.increaseTriggerChanceByPercent(self.increaseTriggerChanceBy)
+
+    def reset(self):
+        self.tokens = 0
