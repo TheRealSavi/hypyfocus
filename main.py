@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+import sys
 import threading
 import time
 import matplotlib.pyplot as plt
@@ -50,17 +51,9 @@ hyperfocusToolboxResults = CircularBuffer(300)
 
 
 def update_skill(val):
-    print(val)
+    # print(val)
     SkillCheck.skill = float(val) / 100
     return
-
-
-root = tk.Tk()
-root.title("Skill Slider")
-root.geometry("400x200")  # Adjust width and height as needed
-
-slider = tk.Scale(root, from_=2, to=100, orient="horizontal", command=update_skill)
-slider.pack()
 
 
 def simStart(name: str, useHyperfocus: bool, useToolbox: bool):
@@ -93,7 +86,7 @@ def runSim():
             ("hyperfocus and toolbox", True, True),
         ]
 
-        # Perform simulations in each thread
+        # Perform simulations
         for sim_name, useHyperfocus, useToolbox in sim_args:
             for _ in range(simCount):
                 result = simStart(sim_name, useHyperfocus, useToolbox)
@@ -156,17 +149,57 @@ def init():
 
 
 def startPlotter():
-    ani = FuncAnimation(fig, update, frames=None, init_func=init, blit=False, interval=1000)
-    plt.tight_layout()
     plt.show()
 
 
 def start_simulation_thread():
-    """Function to start simulation in a background thread."""
     sim_thread = threading.Thread(target=runSim)
     sim_thread.daemon = True  # Daemon thread will exit when the main program exits
     sim_thread.start()
 
+
+ani = FuncAnimation(fig, update, frames=None, init_func=init, blit=False, interval=1000, save_count=20)
+
+root = tk.Tk()
+root.title("Skill Check Configuration")
+root.geometry("500x250")
+root.configure(bg='#f0f0f0')
+root.protocol("WM_DELETE_WINDOW", sys.exit)
+
+description_label = tk.Label(
+    root,
+    text="Skill Level Adjustment",
+    font=("Arial", 14, "bold"),
+    bg='#f0f0f0'
+)
+description_label.pack(pady=(10, 5))
+
+info_label = tk.Label(
+    root,
+    text="Adjust the skill level to control the % chance of hitting a great skill check \ninstead of a good skill check.",
+    font=("Arial", 10),
+    bg='#f0f0f0'
+)
+info_label.pack(pady=(0, 10))
+
+slider = tk.Scale(
+    root,
+    from_=2, to=100,
+    orient="horizontal",
+    command=update_skill,
+    font=("Arial", 10),
+    bg='#e0e0e0',
+    length=300,
+    highlightthickness=0
+)
+slider.pack(pady=(5, 20))
+slider.set(100)
+
+pause_button = tk.Button(root, text="Pause", font=("Arial", 12), command=ani.event_source.stop)
+pause_button.pack(pady=5)
+
+resume_button = tk.Button(root, text="Resume", font=("Arial", 12), command=ani.event_source.start)
+resume_button.pack(pady=5)
 
 if __name__ == '__main__':
     start_simulation_thread()
