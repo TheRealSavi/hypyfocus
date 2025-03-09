@@ -17,7 +17,7 @@ class Hyperfocus:
             return
         self.tokens += 1
         # print("Hyperfocus: Now has " + str(self.tokens) + " tokens")
-        target.increaseRotationSpeedByPercent(self.increaseRotationSpeedBy)
+        target.increaseBaseRotationSpeedByPercent(self.increaseRotationSpeedBy * self.tokens)
         target.increaseBonusPercentByPercent(self.increaseBonusBy)
         target.increaseTriggerChanceByPercent(self.increaseTriggerChanceBy)
 

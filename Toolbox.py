@@ -8,12 +8,13 @@ if TYPE_CHECKING:
 class Toolbox:
     def __init__(self, charges: int, speed: float):
         self.baseCharges = charges
+        self.maxCharges = charges
         self.speedBonusPercent = speed
         self.depleted = False
 
     def repairGen(self, target: Generator, survivor: Survivor):
         chargesToAdd = 1 + self.speedBonusPercent
-        if not (self.baseCharges >= chargesToAdd):
+        if not (self.baseCharges > chargesToAdd):
             if (self.depleted == False):
                 # print("Toolbox: Now depleted")
                 self.depleted = True

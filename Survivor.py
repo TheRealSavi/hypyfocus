@@ -9,11 +9,12 @@ from Skillcheck import SkillCheck
 
 
 class Survivor:
-    def __init__(self, item: Toolbox, hyperfocusEnabled: bool):
+    def __init__(self, item: Toolbox, hyperfocusEnabled: bool, skill: float):
         self.item = item
         self.skillCheckInstance = SkillCheck()
         self.hyperfocus = Hyperfocus()
         self.hyperfocusEnabled = hyperfocusEnabled
+        self.skill = skill
 
     def repair(self, gen: Generator):
         self.item.repairGen(gen, self)
