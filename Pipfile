@@ -8,6 +8,7 @@ matplotlib = "*"
 scipy = "*"
 pygame = "*"
 pandas = "*"
+tqdm = "*"
 
 [dev-packages]
 

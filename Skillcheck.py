@@ -1,8 +1,9 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 if TYPE_CHECKING:
     from Generator import Generator
     from Survivor import Survivor
+    from Toolbox import Toolbox
 
 import random
 
@@ -47,10 +48,10 @@ class SkillCheck:
         # print("SkillCheck: Base Trigger Chance is now " + str(self.baseTriggerChance) + "%")
         # print("SkillCheck: Toolbox Trigger Chance is now " + str(self.triggerChanceWToolbox) + "%")
 
-    def attemptTrigger(self, target: Generator, withToolbox: bool, survivor: Survivor):
+    def attemptTrigger(self, target: Generator, survivor: Survivor, toolbox = None):
         # print("SkillCheck: Attempting skill check trigger")
         triggerChance = self.triggerChance
-        if (withToolbox):
+        if toolbox is not None:
             # print("SkillCheck: Using toolbox Odds")
             triggerChance = self.triggerChanceToolbox
         triggered = random.uniform(0, 1) <= triggerChance
